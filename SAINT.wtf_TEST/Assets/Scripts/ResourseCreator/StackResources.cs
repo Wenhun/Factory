@@ -9,6 +9,7 @@ public class StackResources : MonoBehaviour, ISlotSetup
     private Dictionary<Transform, Resource> _stack = new Dictionary<Transform, Resource>();
     private List<Transform> _slotsForClear = new List<Transform>(); 
     public int capacity {get => _capacity; }
+    private Stock _enteredStock;
     private int _currentWorkload = 0;
 
     public bool isAvailable()
@@ -18,44 +19,55 @@ public class StackResources : MonoBehaviour, ISlotSetup
 
     public void AddToStack(Resource resource)
     {
-        foreach (var slot in _stack)
+        if(resource != null)
         {
-            if (slot.Value == null)
+            foreach (var slot in _stack)
             {
-                _resourceTransitionManager.MoveResource(resource, resource.transform.position, slot.Key.transform);
-                _stack[slot.Key] = resource;
-                _currentWorkload++;
-                break;
+                if (slot.Value == null)
+                {
+                    _enteredStock.ClearSlot(resource);
+                    _resourceTransitionManager.MoveResource(resource, resource.transform.position, slot.Key.transform);
+                    _stack[slot.Key] = resource;
+                    _currentWorkload++;
+                    break;
+                }
             }
         }
     }
 
-    public Resource RemoveFromStack(ResourceType resource, Transform place)
+    public void RemoveFromStack(ResourceType resource)
     {
-        foreach (var slot in _stack)
+        if(_enteredStock != null)
         {
-            if (slot.Value.Type == resource)
+            foreach (var slot in _stack)
             {
-                _slotsForClear.Add(slot.Key);
-                return slot.Value;
+                if (slot.Value.Type == resource)
+                {
+                    _slotsForClear.Add(slot.Key);
+                    Transform newPoint = _enteredStock.FillSlot(slot.Value);
+                    _resourceTransitionManager.MoveResource(slot.Value, slot.Value.transform.position, newPoint);
+                }
+            }
+
+            if (_slotsForClear.Count != 0)
+            {
+                foreach (Transform slot in _slotsForClear)
+                {
+                    _stack.Remove(slot);
+                }
+                _slotsForClear.Clear();
             }
         }
-
-        if (_slotsForClear.Count != 0)
-        {
-            foreach (Transform slot in _slotsForClear)
-            {
-                _stack.Remove(slot);
-            }
-            _slotsForClear.Clear();
-        }
-
-        return null;
     }
 
     public void SetSlots(Transform slot)
     {
         _stack.Add(slot, null);
+    }
+
+    public void SetStock(Stock stock)
+    {
+        _enteredStock = stock;
     }
 
 }

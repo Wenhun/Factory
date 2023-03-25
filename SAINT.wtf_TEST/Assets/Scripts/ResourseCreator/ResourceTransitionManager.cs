@@ -10,16 +10,19 @@ public class ResourceTransitionManager : MonoBehaviour
 
     public void MoveResource(Resource resource, Vector3 start, Transform end)
     {
-        if (_transitionResources.ContainsKey(resource))
+        if(resource != null)
         {
-            _transitionResources[resource] = end;
+            if (_transitionResources.ContainsKey(resource))
+            {
+                _transitionResources[resource] = end;
+            }
+            else
+            {
+                _transitionResources.Add(resource, end);
+            }
+            resource.transform.position = start;
+            resource.transform.SetParent(end);
         }
-        else
-        {
-            _transitionResources.Add(resource, end);
-        }
-        resource.transform.position = start;
-        resource.transform.SetParent(end);
     }
 
     void Update()

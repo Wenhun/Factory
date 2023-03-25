@@ -100,27 +100,4 @@ public class Stock : MonoBehaviour, ISlotSetup
         }
         return null;
     }
-
-    void OnTriggerEnter(Collider other)
-    {
-        if (other.tag == "Player")
-        {
-            StackResources stackResources = other.GetComponentInChildren<StackResources>();
-            switch (Direction)
-            {
-                case StockDirection.Output:
-                    stackResources.AddToStack(ClearSlot());
-                    break;
-                case StockDirection.Input:
-                    //_resourceTransitionManager.MoveResource(slot.Value, slot.Value.transform.position, place);
-                break;
-
-            }
-        }
-    }
-
-    void OnTriggerExit(Collider other)
-    {
-
-    }
 }
