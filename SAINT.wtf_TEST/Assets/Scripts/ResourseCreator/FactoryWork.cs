@@ -4,47 +4,36 @@ using System.Collections.Generic;
 [RequireComponent(typeof(ResourceCreator))]
 public class FactoryWork : MonoBehaviour
 {
+    [SerializeField] private Stock _outputStock;
+    [SerializeField] private Stock[] _inputStocks;
     [SerializeField] private float _productionTime = 3f;
-    [SerializeField] private List<Stock> _stocks = new List<Stock>();
-    [SerializeField] private bool _isMonoFactory;
 
-    private Stock _productionStock;
-    private List<Stock> _inputStocks = new List<Stock>();
+    private ResourceTransitionManager _resourceTransitionManager;
 
+    private bool _isMonoFactory = false;
     private ResourceCreator _resourceCreator;
-
     private float _timer;
 
     private void Start()
     {
-        _resourceCreator = GetComponent<ResourceCreator>();
+        _outputStock.Direction = StockDirection.Output;
 
-        if(!_isMonoFactory)
+        foreach(Stock inputStock in _inputStocks)
         {
-            foreach (Stock stock in _stocks)
-            {
-                switch (stock.type)
-                {
-                    case StockType.Output:
-                        _productionStock = stock;
-                        continue;
-                    case StockType.Input:
-                        _inputStocks.Add(stock);
-                        continue;
-                }
-            }
+            inputStock.Direction = StockDirection.Input;
         }
-        else
-        {
-            _productionStock = _stocks[0];
-        }
+
+        _resourceCreator = GetComponent<ResourceCreator>();
+        _resourceTransitionManager = GetComponent<ResourceTransitionManager>();
+
+        if(_inputStocks.Length == 0) _isMonoFactory = true;
 
         _timer = _productionTime;
     }
 
     private void Update()
     {
-        if(IsCanCreate())
+        if(IsWorking())
         {
             _timer -= Time.deltaTime;
             if (_timer <= 0)
@@ -59,23 +48,37 @@ public class FactoryWork : MonoBehaviour
         }
     }
 
-    private void Create()
+    public bool IsWorking()
     {
-        Instantiate(_resourceCreator.Get(_productionStock.resource), _productionStock.transform);
-        if(!_isMonoFactory)
+        if (!_outputStock.IsAvailable()) 
+            return false;
+
+        if (_isMonoFactory)
+            return true;
+
+        foreach (Stock inputStock in _inputStocks)
         {
-            foreach (Stock stock in _inputStocks)
-            {
-                stock.RemoveResource();
-            }
+            if (inputStock.IsEmpty()) return false;
         }
-        _productionStock.AddResource();
+
+        return true;
     }
 
-    private bool IsCanCreate()
+    private void Create()
     {
-        if (_isMonoFactory) return !_productionStock.IsFull;
+        foreach (Stock inputStock in _inputStocks)
+        {
+            Resource resource =  inputStock.ClearSlot();
+            _resourceTransitionManager.MoveResource(resource, resource.transform.position, transform);
+        }
 
-        return !_productionStock.IsFull && !_inputStocks.Exists(stock => stock.IsEmpty);
+        CreateResource();
+    }
+
+    private void CreateResource()
+    {
+        Resource newResource = Instantiate(_resourceCreator.Get(_outputStock.Resource));
+        Transform slot = _outputStock.FillSlot(newResource);
+        _resourceTransitionManager.MoveResource(newResource, transform.position, slot);
     }
 }

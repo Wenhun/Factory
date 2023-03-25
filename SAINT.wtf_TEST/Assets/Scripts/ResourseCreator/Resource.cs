@@ -9,5 +9,6 @@ public enum ResourceType
 
 public class Resource : MonoBehaviour
 {
-    public ResourceType name;
+    [SerializeField] private ResourceType _type;
+    public ResourceType Type { get => _type; }
 }

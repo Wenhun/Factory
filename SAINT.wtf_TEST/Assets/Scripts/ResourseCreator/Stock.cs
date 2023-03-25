@@ -1,65 +1,126 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
-public enum StockType
+public enum StockDirection
 {
     Input, Output
 }
 
-public class Stock : MonoBehaviour
+[System.Serializable]
+public struct StockType
 {
-    [SerializeField] StockSlot _stockSlot;
-
-    [System.Serializable]
-    private class StockSlot
+    private enum Capacity
     {
-        public StockType type;
-        public ResourceType resource;
-        [Range(5, 30)] public int capacity = 10;
+        four = 4,
+        eight = 8,
+        twelve = 12,
+        sixteen = 16,
+        twentyFour = 24
+    }
+    
+    [SerializeField] private Capacity capacity;
+
+    public StockDirection direction {get; set;}
+    public ResourceType resource;
+    public int GetCapacity {get => (int)capacity; }
+}
+
+public class Stock : MonoBehaviour, ISlotSetup
+{
+    [SerializeField] private StockType _type; 
+
+    public int capacity {get => _type.GetCapacity; }
+    public ResourceType Resource {get => _type.resource; }
+    public StockDirection Direction {get => _type.direction ; set => _type.direction = value;}
+    
+    private Dictionary<Transform, Resource> _slots = new Dictionary<Transform, Resource>();
+    private int _currentWorkload = 0;
+
+    public void SetSlots(Transform slot)
+    {
+        _slots.Add(slot, null);
     }
 
-    [SerializeField] private int _currentWorkload = 0;
-    private bool _isEmpty, _isFull;
-
-    public StockType type { get => _stockSlot.type; }
-    public ResourceType resource { get => _stockSlot.resource; }
-    public bool IsEmpty { get => _isEmpty; }
-    public bool IsFull { get => _isFull; }
-
-    public void AddResource()
+    void Start()
     {
-        _currentWorkload++;
-        _currentWorkload = Mathf.Min(_currentWorkload, _stockSlot.capacity);
+        if(_slots.Count == 0) Debug.Log(transform.parent.name + ": Empty slots!");
     }
 
-    public void RemoveResource()
+    public bool IsAvailable()
     {
-        _currentWorkload--;
-        _currentWorkload = Mathf.Max(_currentWorkload, 0);
+        return _currentWorkload < _slots.Count;
     }
 
-    private void Update()
+    public bool IsEmpty()
     {
-        StockChecker();
+        return _currentWorkload == 0;
     }
 
-    void StockChecker()
+    public Transform FillSlot(Resource resource) 
     {
-        if (_currentWorkload == _stockSlot.capacity)
+        foreach(var slot in _slots)
         {
-            _isFull = true;
+            if(slot.Value == null)
+            {
+                _currentWorkload++;
+                _slots[slot.Key] = resource;
+                return slot.Key;
+            }
         }
-        else
+        return null;
+    }
+
+    public Resource ClearSlot()
+    {
+        foreach (var slot in _slots)
         {
-            _isFull = false;
+            if (slot.Value != null)
+            {
+                _currentWorkload--;
+                Resource removedResource = _slots[slot.Key];
+                _slots[slot.Key] = null;
+                return removedResource;
+            }
         }
 
-        if(_currentWorkload == 0)
+        return null;
+    }
+
+    public Resource ClearSlot(Resource resource)
+    {
+        foreach (var slot in _slots)
         {
-            _isEmpty = true;
+            if (slot.Value == resource)
+            {
+                _currentWorkload--;
+                Resource removedResource = _slots[slot.Key];
+                _slots[slot.Key] = null;
+                return removedResource;
+            }
         }
-        else
+        return null;
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Player")
         {
-            _isEmpty = false;
+            StackResources stackResources = other.GetComponentInChildren<StackResources>();
+            switch (Direction)
+            {
+                case StockDirection.Output:
+                    stackResources.AddToStack(ClearSlot());
+                    break;
+                case StockDirection.Input:
+                    //_resourceTransitionManager.MoveResource(slot.Value, slot.Value.transform.position, place);
+                break;
+
+            }
         }
+    }
+
+    void OnTriggerExit(Collider other)
+    {
+
     }
 }
