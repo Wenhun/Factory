@@ -10,6 +10,7 @@ public class FactoryWork : MonoBehaviour
     [SerializeField]ResourceTransitionManager _resourceTransitionManager;
 
     private bool _isMonoFactory = false;
+    private List<Resource> _resourceForClean = new List<Resource>();
     private ResourceCreator _resourceCreator;
     private float _timer;
 
@@ -48,7 +49,7 @@ public class FactoryWork : MonoBehaviour
 
     public bool IsWorking()
     {
-        if (!_outputStock.IsAvailable()) 
+        if (!_outputStock.isAvailable()) 
             return false;
 
         if (_isMonoFactory)
@@ -67,7 +68,8 @@ public class FactoryWork : MonoBehaviour
         foreach (Stock inputStock in _inputStocks)
         {
             Resource resource =  inputStock.ClearSlot();
-            _resourceTransitionManager.MoveResource(resource, resource.transform.position, transform);
+            resource.TransitionManager.MoveResource(resource.transform.position, transform);
+            _resourceForClean.Add(resource);
         }
 
         CreateResource();
@@ -77,6 +79,14 @@ public class FactoryWork : MonoBehaviour
     {
         Resource newResource = Instantiate(_resourceCreator.Get(_outputStock.Resource));
         Transform slot = _outputStock.FillSlot(newResource);
-        _resourceTransitionManager.MoveResource(newResource, transform.position, slot);
+        newResource.TransitionManager.MoveResource(transform.position, slot);
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if(other.tag == "Resource")
+        {
+            Destroy(other.gameObject);
+        }
     }
 }

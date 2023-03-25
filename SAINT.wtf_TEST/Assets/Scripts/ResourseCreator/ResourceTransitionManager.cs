@@ -5,44 +5,26 @@ public class ResourceTransitionManager : MonoBehaviour
 {
     [SerializeField] private float _translateSpeed = 5f;
 
-    Dictionary<Resource, Transform> _transitionResources = new Dictionary<Resource, Transform>();
-    List<Resource> _resourceForClear = new List<Resource>();
+    private Transform _endPoint;
 
-    public void MoveResource(Resource resource, Vector3 start, Transform end)
-    {
-        if(resource != null)
-        {
-            if (_transitionResources.ContainsKey(resource))
-            {
-                _transitionResources[resource] = end;
-            }
-            else
-            {
-                _transitionResources.Add(resource, end);
-            }
-            resource.transform.position = start;
-            resource.transform.SetParent(end);
-        }
+    public void MoveResource(Vector3 start, Transform end)
+    {       
+        transform.position = start;
+        transform.SetParent(end);
+        _endPoint = end;
     }
 
     void Update()
     {
-        if (_transitionResources.Count != 0)
+        if(_endPoint != null)
         {
-            foreach(var resource in _transitionResources)
+            transform.position = Vector3.MoveTowards(transform.position, _endPoint.position, _translateSpeed * Time.deltaTime);
+            transform.localRotation = Quaternion.identity;
+            if (Vector3.Distance(transform.position, _endPoint.position) <= 0.1f)
             {
-                resource.Key.transform.position = Vector3.MoveTowards(resource.Key.transform.position, resource.Value.position, _translateSpeed * Time.deltaTime);
-                if (Vector3.Distance(resource.Key.transform.position, resource.Value.position) <= 0.1f)
-                {
-                    resource.Key.transform.position = resource.Value.position;
-                    _resourceForClear.Add(resource.Key);
-                }
+                transform.position = _endPoint.position;
+                _endPoint = null;
             }
-            foreach(Resource resource in _resourceForClear)
-            {
-                _transitionResources.Remove(resource);
-            }
-            _resourceForClear.Clear();
         }
     }
 }

@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3375752449666832042}
   - component: {fileID: 3165816392262705835}
   - component: {fileID: 6665043000733008302}
+  - component: {fileID: -256276701177961268}
   m_Layer: 0
   m_Name: StockZone
   m_TagString: Untagged
@@ -99,9 +100,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 817de2b2867f14441b478d9cfae15fe7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _capacity: 12
   _type:
-    capacity: 12
     resource: 0
+    transitionDelay: 1
 --- !u!114 &3165816392262705835
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -129,6 +131,18 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1.0000002, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &-256276701177961268
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3375752449666832043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b47d1241a9f0540b9817d6c1fa034a1c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &4827881807467027458
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,73 +1,94 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StackResources : MonoBehaviour, ISlotSetup
+public class StackResources : MonoBehaviour, ISlotSetup, ISlotController
 {
-    [SerializeField][Range(3, 10)] private int _capacity = 5;
-    [SerializeField] ResourceTransitionManager _resourceTransitionManager;
+    private enum Capacity
+    {
+        four = 4,
+        eight = 8,
+        twelve = 12,
+        sixteen = 16,
+        twentyFour = 24
+    }
+
+    [SerializeField] private Capacity _capacity = Capacity.twelve;
+    public int capacity {get => (int)_capacity; }
     
-    private Dictionary<Transform, Resource> _stack = new Dictionary<Transform, Resource>();
-    private List<Transform> _slotsForClear = new List<Transform>(); 
-    public int capacity {get => _capacity; }
-    private Stock _enteredStock;
-    private int _currentWorkload = 0;
+    protected Dictionary<Transform, Resource> _slots = new Dictionary<Transform, Resource>();
+    protected int _currentWorkload = 0;
+
+    private void Start()
+    {
+        if (_slots.Count == 0) Debug.Log(transform.parent.name + ": Empty slots!");
+    }
 
     public bool isAvailable()
     {
-        return _currentWorkload < _capacity;
+        return _currentWorkload < (int)_capacity;
     }
 
-    public void AddToStack(Resource resource)
+    public bool IsEmpty()
+    {
+        return _currentWorkload == 0;
+    }
+
+    public Transform FillSlot(Resource resource)
     {
         if(resource != null)
         {
-            foreach (var slot in _stack)
+            foreach (var slot in _slots)
             {
                 if (slot.Value == null)
                 {
-                    _enteredStock.ClearSlot(resource);
-                    _resourceTransitionManager.MoveResource(resource, resource.transform.position, slot.Key.transform);
-                    _stack[slot.Key] = resource;
                     _currentWorkload++;
-                    break;
+                    _slots[slot.Key] = resource;
+                    return slot.Key;
                 }
             }
         }
+        return null;
     }
 
-    public void RemoveFromStack(ResourceType resource)
+    public Resource ClearSlot()
     {
-        if(_enteredStock != null)
+        if(!IsEmpty())
         {
-            foreach (var slot in _stack)
+            foreach (var slot in _slots)
             {
-                if (slot.Value.Type == resource)
+                if (slot.Value != null)
                 {
-                    _slotsForClear.Add(slot.Key);
-                    Transform newPoint = _enteredStock.FillSlot(slot.Value);
-                    _resourceTransitionManager.MoveResource(slot.Value, slot.Value.transform.position, newPoint);
+                    _currentWorkload--;
+                    Resource removedResource = _slots[slot.Key];
+                    _slots[slot.Key] = null;
+                    return removedResource;
                 }
-            }
-
-            if (_slotsForClear.Count != 0)
-            {
-                foreach (Transform slot in _slotsForClear)
-                {
-                    _stack.Remove(slot);
-                }
-                _slotsForClear.Clear();
             }
         }
+        return null;
+    }
+
+    public Resource ClearSlot(Resource resource = null, ResourceType? resourceType = null)
+    {
+        if(!IsEmpty())
+        {
+            foreach (var slot in _slots)
+            {
+                if (slot.Value != null && ((resource != null && slot.Value == resource) ||
+                    (resourceType != null && slot.Value.Type == resourceType)))
+                {
+                    _currentWorkload--;
+                    Resource removedResource = _slots[slot.Key];
+                    _slots[slot.Key] = null;
+                    return removedResource;
+                }
+            }
+        }
+        return null;
     }
 
     public void SetSlots(Transform slot)
     {
-        _stack.Add(slot, null);
+        _slots.Add(slot, null);
     }
-
-    public void SetStock(Stock stock)
-    {
-        _enteredStock = stock;
-    }
-
 }

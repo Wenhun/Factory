@@ -1,29 +1,30 @@
 using UnityEngine;
 
+[RequireComponent(typeof(StockTranslationDelay))]
+[RequireComponent(typeof(Stock))]
 public class StockTrigger : MonoBehaviour
 {
     private Stock _thisStock;
+    private StockTranslationDelay _translationDelay;
 
     void Start()
     {
         _thisStock = GetComponent<Stock>();
     }
-    
+
     void OnTriggerEnter(Collider other)
     {
-        if (other.tag == "Player")
+        if (other.tag == "Player" && _thisStock.Direction == StockDirection.Input)
         {
-            StackResources stack = other.GetComponentInChildren<StackResources>();
-            stack.SetStock(_thisStock);
-            if(_thisStock.Direction == StockDirection.Input)
-            {
-                stack.RemoveFromStack(_thisStock.Resource);
-            }
+            StackResources stackResources = other.GetComponentInChildren<StackResources>();
+            _translationDelay = new StockTranslationDelay(stackResources, _thisStock, _thisStock.TransitionDelay);
+            StartCoroutine(_translationDelay.TranslationDelay());
         }
     }
 
     void OnTriggerExit(Collider other)
     {
-        other.GetComponentInChildren<StackResources>().SetStock(null);
+        StopAllCoroutines();
+        _translationDelay = null;
     }
 }
