@@ -116,8 +116,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7c00d80b8009d40729bed17db6844f60, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _firstSlot: {fileID: 2396857672084951180}
-  _lastSlot: {fileID: 8114063977925100509}
+  firstSlot: {fileID: 2396857672084951180}
+  lastSlot: {fileID: 8114063977925100509}
 --- !u!65 &6665043000733008302
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -130,7 +130,7 @@ BoxCollider:
   m_Enabled: 1
   serializedVersion: 2
   m_Size: {x: 1, y: 1.0000002, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Center: {x: 0, y: 0, z: -0.5}
 --- !u!114 &-256276701177961268
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -155,6 +155,7 @@ GameObject:
   - component: {fileID: 1924022824086031176}
   - component: {fileID: 6264844134423787064}
   - component: {fileID: 3725962435528516653}
+  - component: {fileID: 3731743702931311946}
   m_Layer: 0
   m_Name: Canvas
   m_TagString: Untagged
@@ -243,6 +244,19 @@ MonoBehaviour:
   m_BlockingMask:
     serializedVersion: 2
     m_Bits: 4294967295
+--- !u!114 &3731743702931311946
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4827881807467027458}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c368307518f054c75968de842eefcba8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _text: {fileID: 8905695007199317351}
 --- !u!1 &5123496549304589082
 GameObject:
   m_ObjectHideFlags: 0
